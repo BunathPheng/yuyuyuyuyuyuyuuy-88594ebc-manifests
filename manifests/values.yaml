@@ -1,0 +1,56 @@
+replicaCount: 1
+
+image:
+  repository: docker.io/yourusername/springboot-backend
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8080
+
+springProfile: prod
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "1"
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: smartops.space
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# For private images
+imagePullSecrets:
+  - name: myregistrykey
+
+  # Environment variables to inject into the container
+env: {}
+
+# Probes configuration
+probes:
+  liveness:
+    enabled: true
+    path: /actuator/health/liveness
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  readiness:
+    enabled: true
+    path: /actuator/health/readiness
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+# ServiceAccount configuration for Kubernetes Ingress management
+# This ServiceAccount should have RBAC permissions to create/delete Ingress resources
+serviceAccount:
+  name: ingress-manager  # Change to your ServiceAccount name if different
+  create: false  # Set to true if you want Helm to create the ServiceAccount (RBAC must be configured separately)
